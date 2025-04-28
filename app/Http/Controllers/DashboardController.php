@@ -10,38 +10,41 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        // Calculate total sales
+        // --- Cards Data ---
+
+        // Total Sales Amount (₱)
         $totalSales = Sale::sum('total_sales');
 
-        // Count total number of sales
+        // Total Number of Sales (transactions)
         $salesCount = Sale::count();
 
-        // Sales per region
-        $salesPerRegion = Sale::select('region_id', DB::raw('COUNT(*) as count'))
+        // Products sold per region (for card + bar chart)
+        $salesPerRegion = Sale::select('region_id', DB::raw('SUM(units_sold) as total_units'))
             ->groupBy('region_id')
-            ->with('region')
+            ->with('region') // Make sure you have region() relation in Sale model
             ->get()
             ->map(function ($sale) {
                 return [
                     'region_name' => optional($sale->region)->name ?? 'Unknown',
-                    'count' => $sale->count,
+                    'total_units' => $sale->total_units,
                 ];
             });
 
-        // Sales per month (only group by month and year, not day)
+        // --- Charts Data ---
+
+        // Line Chart - Units sold per month
         $salesPerMonth = Sale::select(
-            DB::raw('YEAR(date) as year'),
-            DB::raw('MONTH(date) as month'),
-            DB::raw('SUM(total_sales) as total_sales')
+            DB::raw('DATE_FORMAT(date, "%Y-%m") as month'),
+            DB::raw('SUM(units_sold) as total_units')
         )
-        ->groupBy('year', 'month')
-        ->orderByRaw('year ASC, month ASC')
+        ->groupBy('month')
+        ->orderBy('month')
         ->get();
 
         return view('dashboard.index', compact(
             'totalSales',
             'salesCount',
-            'salesPerRegion',
+            'salesPerRegion', // Updated variable name
             'salesPerMonth'
         ));
     }

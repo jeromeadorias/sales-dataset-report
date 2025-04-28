@@ -12,6 +12,7 @@ class CreateSalesTable extends Migration
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->foreignId('region_id')->constrained()->onDelete('cascade');
             $table->foreignId('salesperson_id')->constrained()->onDelete('cascade');
+            $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->integer('units_sold');
             $table->decimal('unit_price', 8, 2);
             $table->decimal('total_sales', 10, 2);

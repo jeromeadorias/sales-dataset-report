@@ -18,6 +18,7 @@ class Sale extends Model
         'region_id',
         'salesperson_id',
         'units_sold',
+        'category_id',
         'unit_price',
         'total_sales',
     ];
@@ -36,4 +37,9 @@ class Sale extends Model
     {
         return $this->belongsTo(Salesperson::class);
     }
+
+    public function category()
+{
+    return $this->belongsTo(Category::class);
+}
 }

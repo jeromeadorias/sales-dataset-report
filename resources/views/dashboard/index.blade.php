@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container py-5">
-    <h1 class="mb-5 text-center fw-bold">Sales Dataset Report</h1>
+    <h1 class="mb-5 text-center fw-bold">Sales Data Set Report</h1>
 
     <div class="row g-4 mb-5">
         <!-- Total Sales -->
@@ -14,6 +14,23 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body bg-light rounded-3">
+                    <h5 class="card-title text-muted">Sales Per Region</h5>
+                    <ul class="list-unstyled">
+                        @foreach ($salesPerRegion as $region)
+                            <li class="d-flex justify-content-between">
+                                <span>{{ $region['region_name'] }}</span>
+                                <span class="text-success">{{ number_format($region['total_units']) }}</span> <!-- Assuming unit price is 1169 -->
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
 
         <!-- Number of Sales -->
         <div class="col-md-6">
@@ -38,10 +55,10 @@
             </div>
         </div>
 
-        <!-- Sales Per Month Chart -->
+        <!-- Sales Per Date Chart -->
         <div class="col-lg-6">
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-transparent fw-bold">Sales Total Per Month</div>
+                <div class="card-header bg-transparent fw-bold">Sales Total Per Date</div>
                 <div class="card-body">
                     <canvas id="salesPerMonthChart" height="250"></canvas>
                 </div>
@@ -62,7 +79,7 @@ new Chart(salesPerRegionCtx, {
         labels: {!! json_encode($salesPerRegion->pluck('region_name')) !!},
         datasets: [{
             label: 'Sales Count',
-            data: {!! json_encode($salesPerRegion->pluck('count')) !!},
+            data: {!! json_encode($salesPerRegion->pluck('total_units')) !!},
             backgroundColor: 'rgba(54, 162, 235, 0.7)',
             borderColor: 'rgba(54, 162, 235, 1)',
             borderWidth: 1,
@@ -83,16 +100,17 @@ new Chart(salesPerRegionCtx, {
     }
 });
 
-// Sales Per Month Chart
+// Sales Per Date Chart
 const salesPerMonthCtx = document.getElementById('salesPerMonthChart').getContext('2d');
+
 const months = {!! json_encode(
     $salesPerMonth->map(function($item) {
-        return \Carbon\Carbon::createFromDate($item->year, $item->month, 1)->format('M Y');
+        return \Carbon\Carbon::parse($item->month)->format('d-m-Y');
     })
 ) !!};
 
 const monthlySalesData = {!! json_encode(
-    $salesPerMonth->pluck('total_sales')
+    $salesPerMonth->pluck('total_units')
 ) !!};
 
 new Chart(salesPerMonthCtx, {
@@ -100,7 +118,7 @@ new Chart(salesPerMonthCtx, {
     data: {
         labels: months,
         datasets: [{
-            label: 'Total Sales (₱)',
+            label: 'Units Sold',
             data: monthlySalesData,
             backgroundColor: 'rgba(75, 192, 192, 0.2)',
             borderColor: 'rgba(75, 192, 192, 1)',
@@ -115,6 +133,12 @@ new Chart(salesPerMonthCtx, {
             legend: { position: 'top' }
         },
         scales: {
+            x: {
+                ticks: {
+                    maxRotation: 90,
+                    minRotation: 45
+                }
+            },
             y: {
                 beginAtZero: true
             }

@@ -15,4 +15,9 @@ class Category extends Model
     {
         return $this->hasMany(Sale::class);
     }
+
+    public function sales()
+{
+    return $this->hasMany(Sale::class);
+}
 }

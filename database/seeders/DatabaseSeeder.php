@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Sale;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -40,7 +41,13 @@ class DatabaseSeeder extends Seeder
         //     $ctr += 1;
         // }
 
-        $this->call(SalesSeeder::class);
+        $this->call([
+            CategorySeeder::class,
+            ProductSeeder::class,
+            RegionSeeder::class,
+            SalespersonSeeder::class,
+            SalesSeeder::class,
+        ]);
     }
 }
 

@@ -1,143 +1,103 @@
 <?php
 
-// namespace Database\Seeders;
-
-// use Illuminate\Database\Seeder;
-// use App\Models\Category;
-// use App\Models\Product;
-// use App\Models\Region;
-// use App\Models\Salesperson;
-// use App\Models\Sale;
-// use Faker\Factory as Faker;
-
-// class SalesSeeder extends Seeder
-// {
-//     public function run(): void
-//     {
-//         $faker = Faker::create();
-
-//         // Create categories
-//         $categories = collect([
-//             'Electronics', 'Accessories'
-//         ])->map(function ($name) {
-//             return Category::firstOrCreate(['name' => $name]);
-//         });
-
-//         // Create products
-//         $products = collect([
-//             'Laptop', 'Table', 'Headset', 'Smartwatch'
-//         ])->map(function ($name) use ($categories) {
-//             return Product::firstOrCreate([
-//                 'name' => $name,
-//                 'category_id' => $categories->random()->id, // 🛠 Fixed here
-//             ]);
-//         });
-
-//         // Create regions
-//         $regions = collect([
-//             'East', 'West', 'North', 'South'
-//         ])->map(function ($name) {
-//             return Region::firstOrCreate(['name' => $name]);
-//         });
-
-//         // Create salespersons
-//         $salespersons = collect([
-//             'Ethan', 'Charlie', 'Alice', 'Bob'
-//         ])->map(function ($name) {
-//             return Salesperson::firstOrCreate(['name' => $name]);
-//         });
-
-//         // Create 500 dummy sales
-//         for ($i = 0; $i < 500; $i++) {
-//             $product = $products->random();
-//             $region = $regions->random();
-//             $salesperson = $salespersons->random();
-
-//             $unitsSold = $faker->numberBetween(1, 20);
-//             $unitPrice = $faker->randomFloat(2, 100, 5000);
-//             $totalSales = $unitsSold * $unitPrice;
-
-//             Sale::create([
-//                 'date' => $faker->dateTimeBetween('-6 months', 'now')->format('Y-m-d'),
-//                 'product_id' => $product->id,
-//                 'region_id' => $region->id,
-//                 'salesperson_id' => $salesperson->id,
-//                 'units_sold' => $unitsSold,
-//                 'unit_price' => $unitPrice,
-//                 'total_sales' => $totalSales,
-//             ]);
-//         }
-//     }
-// } -->
-
-
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Category;
+use Illuminate\Support\Facades\DB;
 use App\Models\Product;
+use App\Models\Category;
 use App\Models\Region;
 use App\Models\Salesperson;
-use App\Models\Sale;
-use Faker\Factory as Faker;
+use Carbon\Carbon;
 
 class SalesSeeder extends Seeder
 {
-    public function run(): void
+    public function run()
     {
-        $faker = Faker::create();
+        $salesData = [
+            [
+                'date' => '2023-10-11',
+                'product_name' => 'Headphones',
+                'category_name' => 'Accessories',
+                'region_name' => 'East',
+                'salesperson_name' => 'Ethan',
+                'units_sold' => 19,
+                'unit_price' => 1169,
+                'total_sales' => 22211,
+            ],
+            [
+                'date' => '2023-06-05',
+                'product_name' => 'Laptop',
+                'category_name' => 'Electronics',
+                'region_name' => 'North',
+                'salesperson_name' => 'Bob',
+                'units_sold' => 14,
+                'unit_price' => 1649,
+                'total_sales' => 23086,
+            ],
+            [
+                'date' => '2023-04-22',
+                'product_name' => 'Tablet',
+                'category_name' => 'Electronics',
+                'region_name' => 'West',
+                'salesperson_name' => 'Charlie',
+                'units_sold' => 13,
+                'unit_price' => 1508,
+                'total_sales' => 19504,
+            ],
+            [
+                'date' => '2023-10-23',
+                'product_name' => 'Smartwatch', // <-- Make sure Smartwatch exists in products
+                'category_name' => 'Accessories',
+                'region_name' => 'South',
+                'salesperson_name' => 'Diana',
+                'units_sold' => 8,
+                'unit_price' => 1781,
+                'total_sales' => 14248,
+            ],
+            [
+                'date' => '2023-07-01',
+                'product_name' => 'Headphones',
+                'category_name' => 'Accessories',
+                'region_name' => 'South',
+                'salesperson_name' => 'Ethan',
+                'units_sold' => 5,
+                'unit_price' => 121,
+                'total_sales' => 605,
+            ],
+            [
+                'date' => '2023-07-31',
+                'product_name' => 'Smartphone',
+                'category_name' => 'Electronics',
+                'region_name' => 'West',
+                'salesperson_name' => 'Bob',
+                'units_sold' => 4,
+                'unit_price' => 549,
+                'total_sales' => 2196,
+            ],
+        ];
 
-        // Create categories
-        $categories = collect([
-            'Electronics', 'Accessories'
-        ])->map(function ($name) {
-            return Category::firstOrCreate(['name' => $name]);
-        });
+        foreach ($salesData as $sale) {
+            $product = Product::where('name', $sale['product_name'])->first();
+            $category = Category::where('name', $sale['category_name'])->first();
+            $region = Region::where('name', $sale['region_name'])->first();
+            $salesperson = Salesperson::where('name', $sale['salesperson_name'])->first();
 
-        // Create products
-        $products = collect([
-            'Laptop', 'Tablet', 'Headset', 'Smartwatch'
-        ])->map(function ($name) use ($categories) {
-            return Product::firstOrCreate([
-                'name' => $name,
-                'category_id' => $categories->random()->id,
-            ]);
-        });
+            if (!$product || !$category || !$region || !$salesperson) {
+                throw new \Exception("Missing related data for sale entry: " . json_encode($sale));
+            }
 
-        // Create regions
-        $regions = collect([
-            'East', 'West', 'North', 'South'
-        ])->map(function ($name) {
-            return Region::firstOrCreate(['name' => $name]);
-        });
-
-        // Create salespersons
-        $salespersons = collect([
-            'Ethan', 'Charlie', 'Alice', 'Bob'
-        ])->map(function ($name) {
-            return Salesperson::firstOrCreate(['name' => $name]);
-        });
-
-        // Create sales
-        $this->generateSales($products, $regions, $salespersons, 500);
-    }
-
-    private function generateSales($products, $regions, $salespersons, $count = 100)
-    {
-        $faker = Faker::create();
-
-        for ($i = 0; $i < $count; $i++) {
-            $unitsSold = $faker->numberBetween(1, 20);
-            $unitPrice = $faker->randomFloat(2, 100, 5000);
-
-            Sale::create([
-                'date' => $faker->dateTimeBetween('-6 months', 'now')->format('Y-m-d'),
-                'product_id' => $products->random()->id,
-                'region_id' => $regions->random()->id,
-                'salesperson_id' => $salespersons->random()->id,
-                'units_sold' => $unitsSold,
-                'unit_price' => $unitPrice,
-                'total_sales' => $unitsSold * $unitPrice,
+            DB::table('sales')->insert([
+                'date' => $sale['date'],
+                'product_id' => $product->id,
+                'category_id' => $category->id,
+                'region_id' => $region->id,
+                'salesperson_id' => $salesperson->id,
+                'units_sold' => $sale['units_sold'],
+                'unit_price' => $sale['unit_price'],
+                'total_sales' => $sale['total_sales'],
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
             ]);
         }
     }
