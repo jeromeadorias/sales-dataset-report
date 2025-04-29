@@ -2,42 +2,46 @@
 
 @section('content')
 <div class="container py-5">
-    <h1 class="mb-5 text-center fw-bold">Sales Data Set Report</h1>
+    <h1 class="mb-5 text-center fw-bold display-5 animate__animated animate__fadeInDown">📊 Sales Report Dashboard</h1>
 
-    <div class="row g-4 mb-5">
-        <!-- Total Sales -->
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-body bg-light rounded-3">
-                    <h5 class="card-title text-muted">Total Sales</h5>
-                    <p class="card-text h2 text-success mt-3">₱{{ number_format($totalSales, 2) }}</p>
+    <!-- Summary Cards -->
+    <div class="row mb-5 g-4">
+        <div class="col-md-4">
+            <div class="card shadow border-0 rounded-4 animate__animated animate__zoomIn">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="bi bi-cash-coin fs-1 text-primary"></i>
+                    </div>
+                    <h6 class="text-muted">Total Sales</h6>
+                    <h2 class="fw-bold text-primary">₱{{ number_format($totalSales, 2) }}</h2>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-body bg-light rounded-3">
-                    <h5 class="card-title text-muted">Sales Per Region</h5>
-                    <ul class="list-unstyled">
+        <div class="col-md-4">
+            <div class="card shadow border-0 rounded-4 animate__animated animate__zoomIn" style="animation-delay: 0.2s;">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="bi bi-bag-check fs-1 text-success"></i>
+                    </div>
+                    <h6 class="text-muted">Total Number of Sales</h6>
+                    <h2 class="fw-bold text-success">{{ $salesCount }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow border-0 rounded-4 animate__animated animate__zoomIn" style="animation-delay: 0.4s;">
+                <div class="card-body p-4">
+                    <h6 class="text-muted text-center mb-3">Sales Per Region</h6>
+                    <ul class="list-group list-group-flush">
                         @foreach ($salesPerRegion as $region)
-                            <li class="d-flex justify-content-between">
+                            <li class="list-group-item d-flex justify-content-between">
                                 <span>{{ $region['region_name'] }}</span>
-                                <span class="text-success">{{ number_format($region['total_units']) }}</span> <!-- Assuming unit price is 1169 -->
+                                <span class="fw-bold">{{ number_format($region['total_units']) }}</span>
                             </li>
                         @endforeach
                     </ul>
-                </div>
-            </div>
-        </div>
-        
-
-        <!-- Number of Sales -->
-        <div class="col-md-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-body bg-light rounded-3">
-                    <h5 class="card-title text-muted">Number of Sales</h5>
-                    <p class="card-text h2 text-primary mt-3">{{ $salesCount }}</p>
                 </div>
             </div>
         </div>
@@ -45,20 +49,22 @@
 
     <!-- Charts -->
     <div class="row g-4">
-        <!-- Sales Per Region Chart -->
         <div class="col-lg-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-transparent fw-bold">Sales Count Per Region</div>
+            <div class="card shadow border-0 rounded-4 animate__animated animate__fadeInUp">
+                <div class="card-header bg-white border-bottom-0 text-center fw-bold fs-5 py-3">
+                    Sales Count by Region
+                </div>
                 <div class="card-body">
                     <canvas id="salesPerRegionChart" height="250"></canvas>
                 </div>
             </div>
         </div>
 
-        <!-- Sales Per Date Chart -->
         <div class="col-lg-6">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-transparent fw-bold">Sales Total Per Date</div>
+            <div class="card shadow border-0 rounded-4 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
+                <div class="card-header bg-white border-bottom-0 text-center fw-bold fs-5 py-3">
+                    Total Sales Per Date
+                </div>
                 <div class="card-body">
                     <canvas id="salesPerMonthChart" height="250"></canvas>
                 </div>
@@ -67,7 +73,10 @@
     </div>
 </div>
 
-<!-- Chart.js CDN -->
+<!-- Animate.css CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
@@ -78,48 +87,40 @@ new Chart(salesPerRegionCtx, {
     data: {
         labels: {!! json_encode($salesPerRegion->pluck('region_name')) !!},
         datasets: [{
-            label: 'Sales Count',
+            label: 'Units Sold',
             data: {!! json_encode($salesPerRegion->pluck('total_units')) !!},
             backgroundColor: 'rgba(54, 162, 235, 0.7)',
             borderColor: 'rgba(54, 162, 235, 1)',
             borderWidth: 1,
-            borderRadius: 5,
+            borderRadius: 6,
         }]
     },
     options: {
+        animation: {
+            duration: 1200,
+            easing: 'easeOutBounce'
+        },
         responsive: true,
         plugins: {
             legend: { display: false }
         },
         scales: {
-            y: {
-                beginAtZero: true,
-                ticks: { stepSize: 5 }
-            }
+            y: { beginAtZero: true }
         }
     }
 });
 
-// Sales Per Date Chart
+// Sales Per Month Chart
 const salesPerMonthCtx = document.getElementById('salesPerMonthChart').getContext('2d');
-
-const months = {!! json_encode(
-    $salesPerMonth->map(function($item) {
-        return \Carbon\Carbon::parse($item->month)->format('d-m-Y');
-    })
-) !!};
-
-const monthlySalesData = {!! json_encode(
-    $salesPerMonth->pluck('total_units')
-) !!};
-
 new Chart(salesPerMonthCtx, {
     type: 'line',
     data: {
-        labels: months,
+        labels: {!! json_encode(
+            $salesPerMonth->map(fn($item) => \Carbon\Carbon::parse($item->month)->format('d-m-Y'))
+        ) !!},
         datasets: [{
             label: 'Units Sold',
-            data: monthlySalesData,
+            data: {!! json_encode($salesPerMonth->pluck('total_units')) !!},
             backgroundColor: 'rgba(75, 192, 192, 0.2)',
             borderColor: 'rgba(75, 192, 192, 1)',
             pointBackgroundColor: 'rgba(75, 192, 192, 1)',
@@ -128,6 +129,10 @@ new Chart(salesPerMonthCtx, {
         }]
     },
     options: {
+        animation: {
+            duration: 1500,
+            easing: 'easeInOutQuart'
+        },
         responsive: true,
         plugins: {
             legend: { position: 'top' }
@@ -135,8 +140,9 @@ new Chart(salesPerMonthCtx, {
         scales: {
             x: {
                 ticks: {
-                    maxRotation: 90,
-                    minRotation: 45
+                    autoSkip: true,
+                    maxRotation: 45,
+                    minRotation: 45,
                 }
             },
             y: {
